@@ -1,13 +1,27 @@
 import Link from "next/link";
 
+const HERO_VIDEO_URL =
+  "https://videos.pexels.com/video-files/3209828/3209828-hd_1920_1080_25fps.mp4";
+
 export default function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#0a1929]">
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster=""
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src={HERO_VIDEO_URL} type="video/mp4" />
+      </video>
+
       <div
-        className="absolute inset-0 opacity-30"
+        className="absolute inset-0 bg-[#0a1929]/70"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 30% 20%, rgba(184, 153, 104, 0.3), transparent 50%), radial-gradient(circle at 70% 80%, rgba(184, 153, 104, 0.2), transparent 50%)",
+            "linear-gradient(to bottom, rgba(10,25,41,0.85) 0%, rgba(10,25,41,0.55) 40%, rgba(10,25,41,0.85) 100%)",
         }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0a1929]" />

@@ -1,26 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { TIME_SLOTS, type TimeSlot, type SlotAvailability } from "@/lib/availability";
 
 export default function BookingForm() {
   const [submitted, setSubmitted] = useState(false);
   const [plan, setPlan] = useState<"standard" | "embedded">("standard");
+  const [date, setDate] = useState<string>("");
+  const [time, setTime] = useState<TimeSlot | "">("");
+  const [slots, setSlots] = useState<SlotAvailability[]>(
+    TIME_SLOTS.map((slot) => ({ slot, available: true }))
+  );
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  useEffect(() => {
+    if (!date) return;
+    setLoadingSlots(true);
+    setTime("");
+    fetch(`/api/availability?date=${encodeURIComponent(date)}`)
+      .then((r) => r.json())
+      .then((data: { slots: SlotAvailability[] }) => {
+        setSlots(data.slots);
+      })
+      .catch(() => {
+        setSlots(TIME_SLOTS.map((slot) => ({ slot, available: true })));
+      })
+      .finally(() => setLoadingSlots(false));
+  }, [date]);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!time) return;
     setSubmitted(true);
   }
 
   if (submitted) {
     return (
       <div className="bg-white border border-[#b89968] p-12 text-center">
-        <p className="text-[#b89968] text-xs tracking-[0.5em] mb-4">
-          THANK YOU
-        </p>
+        <p className="text-[#b89968] text-xs tracking-[0.5em] mb-4">THANK YOU</p>
         <div className="gold-line w-20 mx-auto mb-8" />
-        <h2 className="font-serif text-2xl mb-6">
-          ご予約ありがとうございます
-        </h2>
+        <h2 className="font-serif text-2xl mb-6">ご予約ありがとうございます</h2>
         <p className="text-sm text-muted leading-[2]">
           ご入力いただいた内容を確認のうえ、
           <br />
@@ -29,6 +48,8 @@ export default function BookingForm() {
       </div>
     );
   }
+
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -71,9 +92,7 @@ export default function BookingForm() {
               <p className="font-serif text-base mb-1">
                 スタンダード + 埋め込みエアコン
               </p>
-              <p className="text-xs text-muted">
-                エアコンが天井埋め込み型の場合
-              </p>
+              <p className="text-xs text-muted">エアコンが天井埋め込み型の場合</p>
             </div>
             <p className="font-serif text-lg text-foreground whitespace-nowrap">
               ¥71,500
@@ -123,11 +142,52 @@ export default function BookingForm() {
           type="date"
           name="date"
           required
+          min={today}
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
           className="w-full bg-white border border-border px-4 py-3 text-sm focus:border-[#b89968] focus:outline-none transition-colors"
         />
-        <p className="text-xs text-muted mt-2">
-          ※第1希望をご記入ください。空き状況によりご相談させていただきます。
-        </p>
+      </div>
+
+      <div>
+        <label className="block text-xs tracking-[0.3em] text-[#b89968] mb-3">
+          ご希望時間 <span className="text-red-500">*</span>
+        </label>
+        {!date ? (
+          <p className="text-xs text-muted bg-white border border-border px-4 py-4">
+            ※先に日付をお選びください
+          </p>
+        ) : loadingSlots ? (
+          <p className="text-xs text-muted bg-white border border-border px-4 py-4">
+            空き状況を確認中…
+          </p>
+        ) : (
+          <>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+              {slots.map(({ slot, available }) => (
+                <button
+                  key={slot}
+                  type="button"
+                  disabled={!available}
+                  onClick={() => setTime(slot)}
+                  className={`py-3 text-sm tracking-wider border transition-all ${
+                    !available
+                      ? "bg-[#f0ede5] border-border text-muted/50 cursor-not-allowed line-through"
+                      : time === slot
+                      ? "bg-[#b89968] border-[#b89968] text-white"
+                      : "bg-white border-border hover:border-[#b89968] text-foreground"
+                  }`}
+                >
+                  {slot}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-muted mt-3">
+              ※作業はおおよそ3〜4時間です。お選びの時間から開始いたします。
+            </p>
+          </>
+        )}
+        <input type="hidden" name="time" value={time} />
       </div>
 
       <div>
@@ -144,7 +204,8 @@ export default function BookingForm() {
 
       <button
         type="submit"
-        className="w-full py-5 bg-[#0a1929] text-white tracking-[0.3em] text-sm hover:bg-[#b89968] transition-all"
+        disabled={!date || !time}
+        className="w-full py-5 bg-[#0a1929] text-white tracking-[0.3em] text-sm hover:bg-[#b89968] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
       >
         予約を送信する
       </button>
@@ -177,8 +238,7 @@ function Field({
         htmlFor={name}
         className="block text-xs tracking-[0.3em] text-[#b89968] mb-3"
       >
-        {label.toUpperCase()}{" "}
-        {required && <span className="text-red-500">*</span>}
+        {label} {required && <span className="text-red-500">*</span>}
       </label>
       <input
         id={name}

@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fafaf7;
+  --foreground: #1a1d2e;
+  --accent: #b89968;
+  --accent-dark: #8b7448;
+  --muted: #6b6b5e;
+  --border: #e5e1d6;
+  --surface: #ffffff;
+  --hero-bg: #0a1929;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-surface: var(--surface);
+  --color-hero: var(--hero-bg);
+  --font-serif: var(--font-noto-serif-jp), "Noto Serif JP", serif;
+  --font-sans: var(--font-noto-sans-jp), "Noto Sans JP", sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-noto-sans-jp), "Noto Sans JP", -apple-system, "Hiragino Sans", "Yu Gothic", sans-serif;
+  font-feature-settings: "palt";
+  letter-spacing: 0.02em;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-noto-serif-jp), "Noto Serif JP", serif;
+  letter-spacing: 0.05em;
+}
+
+.gold-line {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  height: 1px;
+}
+
+.fade-in {
+  animation: fadeIn 1.2s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
